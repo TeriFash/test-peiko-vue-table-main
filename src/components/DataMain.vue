@@ -35,6 +35,17 @@ export default {
     };
   },
   methods: {
+    numberFormatedList(arr) {
+      const newArr = arr.map((item) => {
+        const numberFixed = item.toFixed(2);
+        const numberFormated = new Intl.NumberFormat("en-EN").format(
+          numberFixed
+        );
+        return `${numberFormated}`;
+      });
+
+      return newArr;
+    },
     async getAsyncDataList() {
       try {
         this.disabled = true;
@@ -43,22 +54,10 @@ export default {
           this.dataOpt
         );
 
-        const currentMark = current.map((item) => {
-          const numberFixed = item.toFixed(2);
-          const numberFormated = new Intl.NumberFormat("en-EN").format(
-            numberFixed
-          );
-          return `${numberFormated}`;
-        });
-
-        const startMark = start.map((item) => {
-          const numberFixed = item.toFixed(2);
-          const numberFormated = new Intl.NumberFormat("en-EN").format(
-            numberFixed
-          );
-          return numberFormated.toString().split("")[0] === "-"
-            ? `-${numberFormated}`
-            : `+${numberFormated}`;
+        const currentMark = this.numberFormatedList(current);
+        const startList = this.numberFormatedList(start);
+        const startMark = startList.map((item) => {
+          return item.toString().split("")[0] === "-" ? `-${item}` : `+${item}`;
         });
 
         this.dataList = this.dataList = [
