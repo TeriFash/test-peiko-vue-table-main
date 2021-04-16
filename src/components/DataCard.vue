@@ -1,42 +1,61 @@
 <template>
-  <div class="container data-card" :class="isEmpty ? '' : 'is-empty'">
-    <template v-if="isEmpty">
+  <div class="container data-card" :class="markerEmpty ? 'is-empty' : ''">
+    <template v-if="!markerEmpty">
       <div class="data-card__col is-top">
-        <div class="data-card__head" v-for="(item, i) in dataList" :key="i">
-          {{ item.title }}
+        <div class="data-card__head" v-for="(item, i) in data.headers" :key="i">
+          {{ item }}
         </div>
       </div>
-      <div class="data-card__col" v-for="(item, i) in dataList" :key="i">
-        <div class="data-card__row" v-for="(el, y) in item.list" :key="y">
-          <span :class="setElementMark(el)">
-            {{ el }}
+      <div class="data-card__col" v-for="(item, x) in data.lists" :key="x">
+        <div class="data-card__row" v-for="(elem, y) in item.list" :key="y">
+          <span :class="setElementMark(elem)">
+            {{ elem }}
           </span>
         </div>
       </div>
     </template>
-    <DataLoader v-if="markerLoader" />
-    <DataEmpty v-if="!isEmpty && !markerLoader" />
+    <HelperContainer v-else :text="helperText" :type="helperType" />
   </div>
 </template>
 
 <script>
-import DataEmpty from "./DataEmpty";
-import DataLoader from "./DataLoader";
+import HelperContainer from "./HelperContainer";
 
 export default {
   name: "DataCard",
-  components: {
-    DataEmpty,
-    DataLoader,
-  },
-  watch: {
-    dataList() {
-      if (!this.dataList) this.isEmpty = false;
+  props: {
+    data: {
+      type: Object,
+    },
+    markerColum: {
+      type: String,
+      default: "",
+    },
+    markerLoader: {
+      type: Boolean,
+      default: false,
+    },
+    markerEmpty: {
+      type: Boolean,
+      default: false,
     },
   },
-  computed: {
-    isEmpty() {
-      return this.dataList.length;
+  components: {
+    HelperContainer,
+  },
+  data() {
+    return {
+      helperText: "",
+      helperType: "",
+    };
+  },
+  watch: {
+    markerLoader: {
+      immediate: true,
+      handler(val) {
+        this.helperText = val ? "Loading..." : "No data";
+        this.helperType = val ? "loader" : "empty";
+      },
     },
   },
   methods: {
@@ -48,34 +67,16 @@ export default {
       };
     },
   },
-  props: {
-    dataList: {
-      type: Array,
-    },
-    markerColum: {
-      type: String,
-      default: "",
-    },
-    markerLoader: {
-      type: Boolean,
-      default: false,
-    },
-  },
 };
 </script>
 
 <style lang="scss">
 $border: 1px solid #f1f1f1;
-
-.container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
+$background: #f5f5f5;
+$height: 30px;
 
 .data-card {
-  margin-top: 30px;
+  margin-top: $height;
   border: $border;
 
   &__col {
@@ -91,7 +92,7 @@ $border: 1px solid #f1f1f1;
     }
 
     &.is-top {
-      background: #f5f5f5;
+      background: $background;
     }
   }
 
@@ -101,10 +102,11 @@ $border: 1px solid #f1f1f1;
     display: flex;
     align-items: center;
     text-align: left;
-    min-height: 30px;
+    min-height: $height;
     font-size: 0.9rem;
     width: 100%;
     justify-content: center;
+    font-weight: 500;
 
     &:first-child {
       justify-content: flex-start;
@@ -119,8 +121,6 @@ $border: 1px solid #f1f1f1;
     font-weight: 600;
   }
   &__row {
-    font-weight: 500;
-
     &:last-child {
       & .is-success {
         color: #a6d17b;

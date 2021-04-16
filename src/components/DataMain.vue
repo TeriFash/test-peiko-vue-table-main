@@ -9,9 +9,10 @@
     </button>
 
     <DataCard
-      :dataList="dataList"
+      :data="dataList"
       :markerColum="markerColum"
       :markerLoader="isLoader"
+      :markerEmpty="isEmpty"
     />
   </div>
 </template>
@@ -25,56 +26,69 @@ export default {
   components: {
     DataCard,
   },
-
   data() {
     return {
       disabled: false,
       isLoader: false,
-      dataList: [],
+      isEmpty: null,
+      dataList: {
+        lists: [],
+        headers: ["Stock", "Current", "Change"],
+      },
       dataHeader: ["Stock", "Current", "Change"],
       markerColum: "Change",
       dataOpt: mocData.payload,
     };
   },
+  watch: {
+    "dataList.lists": {
+      immediate: true,
+      deep: true,
+      handler(val, old) {
+        if (val !== old) {
+          this.isEmpty = !!val.length;
+        }
+        this.isEmpty = !val.length;
+      },
+    },
+  },
   methods: {
     numberFormatedList(arr) {
-      const newArr = arr.map((item) => {
-        const numberFixed = item.toFixed(2);
+      const result = arr.map((item) => {
         const numberFormated = new Intl.NumberFormat("en-EN").format(
-          numberFixed
+          item.toFixed(2)
         );
         return `${numberFormated}`;
       });
 
-      return newArr;
+      return result;
     },
     markedFormatedList(arr) {
-      const newArr = arr.map((item) => {
+      const result = arr.map((item) => {
         return item.toString().split("")[0] === "-" ? `-${item}` : `+${item}`;
       });
-      return newArr;
+      return result;
     },
     async getAsyncDataList() {
       try {
         this.disabled = true;
         this.isLoader = true;
+
         let tempList = [];
         let result = [];
         let { stocks, current, start } = await this.$simulateAsyncReq(
           this.dataOpt
         );
         const data = [stocks, current, start];
-
-        const currentMark = this.numberFormatedList(current);
-        const startList = this.numberFormatedList(start);
-        const startMark = this.markedFormatedList(startList);
+        const currentMark = await this.numberFormatedList(current);
+        const startList = await this.numberFormatedList(start);
+        const startMark = await this.markedFormatedList(startList);
 
         for (let i = 0; i < data.length; i++) {
           result[i] = [stocks[i], currentMark[i], startMark[i]];
 
           tempList[i] = {
-            mark: this.dataHeader[i] === this.markerColum ? true : false,
-            title: this.dataHeader[i],
+            mark: this.dataList.headers[i] === this.markerColum ? true : false,
             list: result[i],
           };
         }
@@ -89,13 +103,13 @@ export default {
           return 0;
         };
 
-        this.dataList = tempList.sort(compare);
-        this.disabled = !!this.dataList;
-        this.isLoader = false;
+        this.dataList.lists = tempList.sort(compare);
+        this.disabled = !!this.dataList.lists;
       } catch (e) {
         this.disabled = false;
+        this.dataList.lists = [];
+      } finally {
         this.isLoader = false;
-        this.dataList = [];
       }
     },
   },
@@ -104,23 +118,26 @@ export default {
 
 <style lang="scss">
 $border: 1px solid #f1f1f1;
+$background: #f5f5f5;
+$height: 30px;
 
 .data-main {
   max-width: 462px;
   margin: 0 auto;
-  padding: 60px;
+  padding: $height * 2;
   border: $border;
 
   &__button {
     border: $border;
-    background: #f5f5f5;
+    background: $background;
     cursor: pointer;
-    min-height: 30px;
+    min-height: $height;
     min-width: 120px;
     font-weight: 500;
 
     &:hover,
-    &:focus {
+    &:focus,
+    &:active {
       background: #d8d8d8;
       border: $border;
       outline: none;
@@ -131,10 +148,9 @@ $border: 1px solid #f1f1f1;
       cursor: initial;
 
       &:hover,
-      &:focus {
-        background: #f5f5f5;
-        outline: none;
-        box-shadow: none;
+      &:focus,
+      &:active {
+        background: $background;
       }
     }
   }
