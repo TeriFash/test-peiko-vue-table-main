@@ -9,7 +9,7 @@
     </button>
 
     <DataCard
-      :data="dataList"
+      :dataList="dataList"
       :markerColum="'Change'"
       :markerLoader="isLoader"
     />
@@ -44,14 +44,21 @@ export default {
         );
 
         const currentMark = current.map((item) => {
-          return typeof item == "number" ? item.toFixed(2) : item;
+          const numberFixed = item.toFixed(2);
+          const numberFormated = new Intl.NumberFormat("en-EN").format(
+            numberFixed
+          );
+          return `${numberFormated}`;
         });
 
         const startMark = start.map((item) => {
-          const localVal = typeof item == "number" ? item.toFixed(2) : item;
-          return localVal.toString().split("")[0] === "-"
-            ? `-${item}`
-            : `+${item}`;
+          const numberFixed = item.toFixed(2);
+          const numberFormated = new Intl.NumberFormat("en-EN").format(
+            numberFixed
+          );
+          return numberFormated.toString().split("")[0] === "-"
+            ? `-${numberFormated}`
+            : `+${numberFormated}`;
         });
 
         this.dataList = this.dataList = [
@@ -115,8 +122,6 @@ $border: 1px solid #f1f1f1;
       &:hover,
       &:focus {
         background: #f5f5f5;
-
-        border: $border;
         outline: none;
         box-shadow: none;
       }

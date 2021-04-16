@@ -1,7 +1,7 @@
 <template>
   <div class="container data-card" :class="isEmpty ? '' : 'is-empty'">
     <template v-if="isEmpty">
-      <div class="data-card__col" v-for="(item, i) in data" :key="i">
+      <div class="data-card__col" v-for="(item, i) in dataList" :key="i">
         <div class="data-card__head">
           {{ item.title }}
         </div>
@@ -23,21 +23,18 @@ import DataLoader from "./DataLoader";
 
 export default {
   name: "DataCard",
-  data() {
-    return {};
-  },
   components: {
     DataEmpty,
     DataLoader,
   },
   watch: {
-    data() {
-      if (!this.data) this.isEmpty = false;
+    dataList() {
+      if (!this.dataList) this.isEmpty = false;
     },
   },
   computed: {
     isEmpty() {
-      return this.data.length;
+      return this.dataList.length;
     },
   },
   methods: {
@@ -50,7 +47,7 @@ export default {
     },
   },
   props: {
-    data: {
+    dataList: {
       type: Array,
     },
     markerColum: {
