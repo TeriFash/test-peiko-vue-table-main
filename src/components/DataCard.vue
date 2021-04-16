@@ -1,13 +1,15 @@
 <template>
   <div class="container data-card" :class="isEmpty ? '' : 'is-empty'">
     <template v-if="isEmpty">
-      <div class="data-card__col" v-for="(item, i) in dataList" :key="i">
-        <div class="data-card__head">
+      <div class="data-card__col is-top">
+        <div class="data-card__head" v-for="(item, i) in dataList" :key="i">
           {{ item.title }}
         </div>
-        <div class="data-card__row" v-for="(element, y) in item.list" :key="y">
-          <span :class="item.title === markerColum && setElementMark(element)">
-            {{ element }}
+      </div>
+      <div class="data-card__col" v-for="(item, i) in dataList" :key="i">
+        <div class="data-card__row" v-for="(el, y) in item.list" :key="y">
+          <span :class="setElementMark(el)">
+            {{ el }}
           </span>
         </div>
       </div>
@@ -67,7 +69,7 @@ $border: 1px solid #f1f1f1;
 
 .container {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
 }
@@ -77,23 +79,19 @@ $border: 1px solid #f1f1f1;
   border: $border;
 
   &__col {
-    width: 33.33%;
+    width: 100%;
     min-width: 124px;
-
-    div {
-      justify-content: center;
-    }
-
-    &:first-child {
-      div {
-        justify-content: flex-start;
-      }
-    }
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: $border;
 
     &:last-child {
-      div {
-        justify-content: flex-end;
-      }
+      border-bottom: none;
+    }
+
+    &.is-top {
+      background: #f5f5f5;
     }
   }
 
@@ -105,30 +103,31 @@ $border: 1px solid #f1f1f1;
     text-align: left;
     min-height: 30px;
     font-size: 0.9rem;
+    width: 100%;
+    justify-content: center;
+
+    &:first-child {
+      justify-content: flex-start;
+    }
+
+    &:last-child {
+      justify-content: flex-end;
+    }
   }
 
   &__head {
-    background: #f5f5f5;
     font-weight: 600;
-    border-bottom: $border;
   }
   &__row {
     font-weight: 500;
 
-    &:not(:last-child),
-    &:not(:first-child) {
-      border-bottom: $border;
-    }
-
     &:last-child {
-      border-bottom: none;
-    }
-
-    & .is-success {
-      color: #a6d17b;
-    }
-    & .is-error {
-      color: #e08582;
+      & .is-success {
+        color: #a6d17b;
+      }
+      & .is-error {
+        color: #e08582;
+      }
     }
   }
 

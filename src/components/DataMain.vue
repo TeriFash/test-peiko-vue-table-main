@@ -10,7 +10,7 @@
 
     <DataCard
       :dataList="dataList"
-      :markerColum="'Change'"
+      :markerColum="markerColum"
       :markerLoader="isLoader"
     />
   </div>
@@ -31,6 +31,8 @@ export default {
       disabled: false,
       isLoader: false,
       dataList: [],
+      dataHeader: ["Stock", "Current", "Change"],
+      markerColum: "Change",
       dataOpt: mocData.payload,
     };
   },
@@ -46,38 +48,48 @@ export default {
 
       return newArr;
     },
+    markedFormatedList(arr) {
+      const newArr = arr.map((item) => {
+        return item.toString().split("")[0] === "-" ? `-${item}` : `+${item}`;
+      });
+      return newArr;
+    },
     async getAsyncDataList() {
       try {
         this.disabled = true;
         this.isLoader = true;
+        let tempList = [];
+        let result = [];
         let { stocks, current, start } = await this.$simulateAsyncReq(
           this.dataOpt
         );
+        const data = [stocks, current, start];
 
         const currentMark = this.numberFormatedList(current);
         const startList = this.numberFormatedList(start);
-        const startMark = startList.map((item) => {
-          return item.toString().split("")[0] === "-" ? `-${item}` : `+${item}`;
-        });
+        const startMark = this.markedFormatedList(startList);
 
-        this.dataList = this.dataList = [
-          {
-            mark: false,
-            title: "Stock",
-            list: stocks,
-          },
-          {
-            mark: false,
-            title: "Current",
-            list: currentMark,
-          },
-          {
-            mark: true,
-            title: "Change",
-            list: startMark,
-          },
-        ];
+        for (let i = 0; i < data.length; i++) {
+          result[i] = [stocks[i], currentMark[i], startMark[i]];
 
+          tempList[i] = {
+            mark: this.dataHeader[i] === this.markerColum ? true : false,
+            title: this.dataHeader[i],
+            list: result[i],
+          };
+        }
+
+        const compare = (a, b) => {
+          if (a.list[0] < b.list[0]) {
+            return -1;
+          }
+          if (a.list[0] > b.list[0]) {
+            return 1;
+          }
+          return 0;
+        };
+
+        this.dataList = tempList.sort(compare);
         this.disabled = !!this.dataList;
         this.isLoader = false;
       } catch (e) {
